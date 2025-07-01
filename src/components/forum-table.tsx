@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/table";
 
 import { Badge } from "./ui/badge";
-import { Source, getAllSources } from "@/lib/data";
+import { getAllSources } from "@/lib/data";
 import Link from "next/link";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
@@ -136,7 +136,7 @@ export const columns: ColumnDef<Forum>[] = [
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <Link href={`/sources/forums/${forum.id}`}>View forum</Link>
+              <Link href={`/sources/${forum.id}`}>View forum</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -154,32 +154,28 @@ export function ForumTable() {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState<string | undefined>(undefined);
-  const [countryFilter, setCountryFilter] = React.useState<string | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = React.useState('all');
+  const [countryFilter, setCountryFilter] = React.useState('all');
 
-  const data: Forum[] = getAllSources().filter(source => source.type === "Forum") as Forum[];
+  const forumSources = React.useMemo(() => getAllSources()
+    .filter(source => source.type === "Forum")
+    .map(source => ({
+      id: source.id,
+      name: source.name,
+      url: source.urls[0] || '',
+      status: source.status,
+      country: source.country,
+  }) as Forum), []);
+
 
   const filteredData = React.useMemo(() => {
-    let currentData = data;
-
-    if (searchTerm) {
-      currentData = currentData.filter((forum) =>
-        Object.values(forum).some((value) =>
-          String(value).toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-    }
-
-    if (statusFilter) {
-        currentData = currentData.filter(forum => forum.status === statusFilter);
-    }
-
-    if (countryFilter) {
-        currentData = currentData.filter(forum => forum.country === countryFilter);
-    }
-
-    return currentData;
-  }, [data, searchTerm, statusFilter, countryFilter]);
+    return forumSources.filter(forum =>
+      (forum.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       forum.url.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (statusFilter === 'all' || forum.status === statusFilter) &&
+      (countryFilter === 'all' || forum.country === countryFilter)
+    );
+  }, [forumSources, searchTerm, statusFilter, countryFilter]);
 
   const table = useReactTable({
     data: filteredData,
@@ -201,15 +197,15 @@ export function ForumTable() {
   });
 
   const countries = React.useMemo(() => {
-    const countryList = data.map(forum => forum.country);
+    const countryList = forumSources.map(forum => forum.country);
     return Array.from(new Set(countryList)).sort();
-  }, [data]);
+  }, [forumSources]);
 
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Search all columns..."
+          placeholder="Search by name or URL..."
           value={searchTerm}
           onChange={(event) => setSearchTerm(event.target.value)}
           className="max-w-sm mr-4"
@@ -219,10 +215,10 @@ export function ForumTable() {
                 <SelectValue placeholder="Filter by Status" />
             </SelectTrigger>
             <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="Active">Active</SelectItem>
                 <SelectItem value="Inactive">Inactive</SelectItem>
                 <SelectItem value="Pending">Pending</SelectItem>
-                 <SelectItem value="">All Statuses</SelectItem>
             </SelectContent>
         </Select>
          <Select onValueChange={setCountryFilter} value={countryFilter}>
@@ -230,10 +226,10 @@ export function ForumTable() {
                 <SelectValue placeholder="Filter by Country" />
             </SelectTrigger>
             <SelectContent>
+                <SelectItem value="all">All Countries</SelectItem>
                 {countries.map(country => (
                     <SelectItem key={country} value={country}>{country}</SelectItem>
                 ))}
-                 <SelectItem value="">All Countries</SelectItem>
             </SelectContent>
         </Select>
         <DropdownMenu>
