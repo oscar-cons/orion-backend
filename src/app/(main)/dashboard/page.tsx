@@ -50,20 +50,8 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-6 mt-6 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="lg:col-span-4">
-          <CardHeader>
-            <CardTitle>Source Distribution by Country</CardTitle>
-            <CardDescription>Top countries hosting the monitored sources.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="w-full h-[350px]">
-              <WorldMapChart data={countryDistribution} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-3">
+      <div className="grid grid-cols-1 gap-6 mt-6">
+        <Card>
           <CardHeader>
             <CardTitle>Recently Added Sources</CardTitle>
             <CardDescription>The latest sources identified and added to the system.</CardDescription>
@@ -91,6 +79,18 @@ export default function DashboardPage() {
                 ))}
               </TableBody>
             </Table>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Source Distribution by Country</CardTitle>
+            <CardDescription>Top countries hosting the monitored sources.</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="w-full h-[350px]">
+              <WorldMapChart data={countryDistribution} />
+            </div>
           </CardContent>
         </Card>
       </div>
