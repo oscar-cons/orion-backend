@@ -19,7 +19,7 @@ function DetailItem({ label, value }: DetailItemProps) {
   return (
     <div>
       <p className="text-sm font-medium text-muted-foreground">{label}</p>
-      <p className="text-base text-foreground">{value}</p>
+      <div className="text-base text-foreground">{value}</div>
     </div>
   );
 }
