@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
+import { ZoomableGroup, ComposableMap, Geographies, Geography } from 'react-simple-maps';
 import { Tooltip as ReactTooltip } from 'react-tooltip'
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
@@ -22,46 +22,48 @@ export function WorldMapChart({ data }: MapChartProps) {
             <ComposableMap 
                 projectionConfig={{ scale: 147 }} 
                 style={{ width: '100%', height: '100%' }}
-                data-tooltip-id="map-tooltip"
             >
-                <Geographies geography={GEO_URL}>
-                    {({ geographies }) =>
-                        geographies.map((geo) => {
-                            const countryName = geo.properties.name;
-                            const mappedName = countryNameMapping[countryName] || countryName;
-                            const countryData = dataMap.get(mappedName);
+                <ZoomableGroup center={[0, 0]} zoom={1}>
+                    <Geographies geography={GEO_URL}>
+                        {({ geographies }) =>
+                            geographies.map((geo) => {
+                                const countryName = geo.properties.name;
+                                const mappedName = countryNameMapping[countryName] || countryName;
+                                const countryData = dataMap.get(mappedName);
 
-                            return (
-                                <Geography
-                                    key={geo.rsmKey}
-                                    geography={geo}
-                                    data-tooltip-content={countryData ? `${mappedName}: ${countryData.value} sources` : `${mappedName}: No sources`}
-                                    style={{
-                                        default: {
-                                            fill: countryData ? countryData.fill : 'hsl(var(--card))',
-                                            outline: 'none',
-                                            stroke: 'hsl(var(--border))',
-                                            strokeWidth: 1,
-                                        },
-                                        hover: {
-                                            fill: countryData ? countryData.fill : 'hsl(var(--card))',
-                                            outline: 'none',
-                                            stroke: 'hsl(var(--ring))',
-                                            strokeWidth: 1.5,
-                                            filter: 'brightness(1.2)'
-                                        },
-                                        pressed: {
-                                            fill: countryData ? countryData.fill : 'hsl(var(--card))',
-                                            outline: 'none',
-                                            stroke: 'hsl(var(--ring))',
-                                            strokeWidth: 1.5,
-                                        },
-                                    }}
-                                />
-                            );
-                        })
-                    }
-                </Geographies>
+                                return (
+                                    <Geography
+                                        key={geo.rsmKey}
+                                        geography={geo}
+                                        data-tooltip-id="map-tooltip"
+                                        data-tooltip-content={countryData ? `${mappedName}: ${countryData.value} sources` : `${mappedName}: No sources`}
+                                        style={{
+                                            default: {
+                                                fill: countryData ? countryData.fill : 'hsl(var(--card))',
+                                                outline: 'none',
+                                                stroke: 'hsl(var(--border))',
+                                                strokeWidth: 0.5,
+                                            },
+                                            hover: {
+                                                fill: countryData ? countryData.fill : 'hsl(var(--card))',
+                                                outline: 'none',
+                                                stroke: 'hsl(var(--ring))',
+                                                strokeWidth: 1,
+                                                filter: 'brightness(1.2)'
+                                            },
+                                            pressed: {
+                                                fill: countryData ? countryData.fill : 'hsl(var(--card))',
+                                                outline: 'none',
+                                                stroke: 'hsl(var(--ring))',
+                                                strokeWidth: 1,
+                                            },
+                                        }}
+                                    />
+                                );
+                            })
+                        }
+                    </Geographies>
+                </ZoomableGroup>
             </ComposableMap>
             <ReactTooltip id="map-tooltip" openOnClick={true} />
         </>
