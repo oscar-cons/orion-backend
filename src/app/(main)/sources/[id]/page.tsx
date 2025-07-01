@@ -1,4 +1,7 @@
-import { getSourceById, getSourceContent, Source } from '@/lib/data';
+'use client';
+
+import { useState } from 'react';
+import { getSourceById, getSourceContent } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,8 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, Edit } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Edit, Search, SlidersHorizontal } from 'lucide-react';
 import { SourceUrls } from '@/components/source-urls';
+import { Input } from '@/components/ui/input';
 
 type DetailItemProps = {
   label: string;
@@ -26,6 +30,7 @@ function DetailItem({ label, value }: DetailItemProps) {
 }
 
 export default function SourceDetailPage({ params }: { params: { id: string } }) {
+  const [activeTab, setActiveTab] = useState('profile');
   const source = getSourceById(params.id);
 
   if (!source) {
@@ -56,12 +61,27 @@ export default function SourceDetailPage({ params }: { params: { id: string } })
       </div>
      
 
-      <Tabs defaultValue="profile">
-        <TabsList className="mb-4">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="content">Latest Content</TabsTrigger>
-          <TabsTrigger value="urls">URLs</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="profile" onValueChange={(value) => setActiveTab(value)}>
+        <div className="flex items-center justify-between mb-4">
+          <TabsList>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="content">Latest Content</TabsTrigger>
+            <TabsTrigger value="urls">URLs</TabsTrigger>
+          </TabsList>
+          
+          {activeTab === 'content' && (
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute w-4 h-4 -translate-y-1/2 text-muted-foreground top-1/2 left-3" />
+                <Input placeholder="Search..." className="w-64 pl-10" />
+              </div>
+              <Button variant="outline">
+                <SlidersHorizontal className="w-4 h-4 mr-2" />
+                Advanced
+              </Button>
+            </div>
+          )}
+        </div>
         <TabsContent value="profile">
           <Card>
             <CardContent className="p-6">
