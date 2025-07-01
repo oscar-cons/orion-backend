@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/table";
 
 import { Badge } from "./ui/badge";
-import { getAllSources } from "@/lib/data";
+import { sources } from "@/lib/data";
 import Link from "next/link";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
@@ -157,7 +157,7 @@ export function ForumTable() {
   const [statusFilter, setStatusFilter] = React.useState('all');
   const [countryFilter, setCountryFilter] = React.useState('all');
 
-  const forumSources = React.useMemo(() => getAllSources()
+  const forumSources = React.useMemo(() => sources
     .filter(source => source.type === "Forum")
     .map(source => ({
       id: source.id,
