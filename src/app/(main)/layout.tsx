@@ -1,5 +1,8 @@
 "use client";
 
+import * as React from "react";
+import { usePathname } from "next/navigation";
+import Link from 'next/link';
 import {
   SidebarProvider,
   Sidebar,
@@ -12,10 +15,16 @@ import {
   SidebarTrigger,
   SidebarFooter,
   SidebarRail,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
-import { usePathname } from "next/navigation";
-import { LayoutDashboard, Table2, Settings, Globe, LogOut } from "lucide-react";
-import Link from 'next/link';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { LayoutDashboard, Table2, Settings, Globe, LogOut, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
@@ -25,6 +34,7 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [isSourcesOpen, setIsSourcesOpen] = React.useState(pathname.startsWith("/sources"));
 
   return (
     <SidebarProvider>
@@ -54,18 +64,46 @@ export default function MainLayout({
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
+
             <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname.startsWith("/sources")}
-                tooltip={{ children: "Sources" }}
-              >
-                <Link href="/sources">
-                  <Table2 />
-                  <span>Sources</span>
-                </Link>
-              </SidebarMenuButton>
+              <Collapsible open={isSourcesOpen} onOpenChange={setIsSourcesOpen}>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton
+                    isActive={pathname.startsWith("/sources")}
+                    tooltip={{ children: "Sources" }}
+                  >
+                    <Table2 />
+                    <span className="flex-1 group-data-[collapsible=icon]:hidden">Sources</span>
+                    <ChevronRight className={`w-4 h-4 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${isSourcesOpen ? "rotate-90" : ""}`} />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild isActive={pathname === "/sources"}>
+                            <Link href="/sources">All Sources</Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild href="#">
+                            <Link href="#">Ransomware</Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild href="#">
+                            <Link href="#">Forums</Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                        <SidebarMenuSubButton asChild href="#">
+                            <Link href="#">Telegram</Link>
+                        </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </Collapsible>
             </SidebarMenuItem>
+            
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
