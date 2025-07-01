@@ -29,6 +29,7 @@ export type SourceContent = {
   author: string;
   date: string;
   content: string;
+  screenshotUrl: string;
 };
 
 export const dashboardMetrics = {
@@ -147,6 +148,7 @@ export const getSourceContent = (id: string): SourceContent[] => {
       author: 'UserX123',
       date: '2024-05-20',
       content: 'Just released a new variant of the Zeus botnet. More resilient against takedowns. PM for details and pricing. Not for beginners.',
+      screenshotUrl: 'https://placehold.co/150x100',
     },
     {
       id: 'post2',
@@ -154,6 +156,7 @@ export const getSourceContent = (id: string): SourceContent[] => {
       author: 'CardMasterFlex',
       date: '2024-05-19',
       content: 'Got a fresh batch of 10k US credit card dumps. High balance, 95% validity guaranteed. Escrow accepted. Bulk deals available.',
+      screenshotUrl: 'https://placehold.co/150x100',
     },
     {
       id: 'post3',
@@ -161,6 +164,7 @@ export const getSourceContent = (id: string): SourceContent[] => {
       author: 'NetworkSlayer',
       date: '2024-05-18',
       content: 'I have a powerful botnet, looking for a partner to monetize it for DDoS-for-hire services. Must have reputation. Split is 50/50.',
+      screenshotUrl: 'https://placehold.co/150x100',
     },
      {
       id: 'post4',
@@ -168,6 +172,7 @@ export const getSourceContent = (id: string): SourceContent[] => {
       author: 'ExploitBroker',
       date: '2024-05-17',
       content: 'Private 0-day remote code execution exploit for fully patched Windows 11. Serious inquiries only. Price is 50 BTC. Video proof available for verified buyers.',
+      screenshotUrl: 'https://placehold.co/150x100',
     },
   ]
 }
