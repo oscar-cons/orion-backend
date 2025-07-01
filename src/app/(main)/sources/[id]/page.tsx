@@ -30,7 +30,7 @@ function DetailItem({ label, value }: DetailItemProps) {
 }
 
 export default function SourceDetailPage({ params }: { params: { id: string } }) {
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('content');
   const source = getSourceById(params.id);
 
   const [formattedMetrics, setFormattedMetrics] = useState({
@@ -77,11 +77,11 @@ export default function SourceDetailPage({ params }: { params: { id: string } })
       </div>
      
 
-      <Tabs defaultValue="profile" onValueChange={(value) => setActiveTab(value)}>
+      <Tabs defaultValue="content" onValueChange={(value) => setActiveTab(value)}>
         <div className="flex items-center justify-between mb-4">
           <TabsList>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="content">Latest Content</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="urls">URLs</TabsTrigger>
           </TabsList>
           
@@ -98,6 +98,44 @@ export default function SourceDetailPage({ params }: { params: { id: string } })
             </div>
           )}
         </div>
+        <TabsContent value="content">
+          <Card>
+            <CardHeader>
+                <CardTitle>Latest Posts</CardTitle>
+                <CardDescription>Recent activity scraped from {source.name}.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {content.map(post => (
+                <Link href={`/sources/${source.id}/${post.id}`} key={post.id} className="block group">
+                  <div className="flex items-start justify-between gap-6 p-4 border rounded-lg bg-card/50 group-hover:border-primary/50 group-hover:shadow-lg transition-all">
+                      <div className="flex-1">
+                          <h4 className="font-semibold text-primary-foreground group-hover:text-primary">{post.title}</h4>
+                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                              <span>by {post.author}</span>
+                              <span>&bull;</span>
+                              <span>{post.date}</span>
+                          </div>
+                          <p className="mt-2 text-sm text-foreground/80 line-clamp-2">{post.content}</p>
+                          <div className="mt-4 text-sm font-medium text-primary group-hover:underline">
+                              More Info <ArrowRight className="inline-block w-4 h-4 transition-transform group-hover:translate-x-1" />
+                          </div>
+                      </div>
+                      <div className="flex-shrink-0">
+                          <Image
+                              src={post.screenshotUrl}
+                              alt={`Screenshot for post: ${post.title}`}
+                              width={150}
+                              height={100}
+                              className="object-cover rounded-md"
+                              data-ai-hint="forum post"
+                          />
+                      </div>
+                  </div>
+                </Link>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
         <TabsContent value="profile">
           <Card>
             <CardContent className="p-6">
@@ -149,44 +187,6 @@ export default function SourceDetailPage({ params }: { params: { id: string } })
                         />
                     </div>
                 </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="content">
-          <Card>
-            <CardHeader>
-                <CardTitle>Latest Posts</CardTitle>
-                <CardDescription>Recent activity scraped from {source.name}.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {content.map(post => (
-                <Link href={`/sources/${source.id}/${post.id}`} key={post.id} className="block group">
-                  <div className="flex items-start justify-between gap-6 p-4 border rounded-lg bg-card/50 group-hover:border-primary/50 group-hover:shadow-lg transition-all">
-                      <div className="flex-1">
-                          <h4 className="font-semibold text-primary-foreground group-hover:text-primary">{post.title}</h4>
-                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                              <span>by {post.author}</span>
-                              <span>&bull;</span>
-                              <span>{post.date}</span>
-                          </div>
-                          <p className="mt-2 text-sm text-foreground/80 line-clamp-2">{post.content}</p>
-                          <div className="mt-4 text-sm font-medium text-primary group-hover:underline">
-                              More Info <ArrowRight className="inline-block w-4 h-4 transition-transform group-hover:translate-x-1" />
-                          </div>
-                      </div>
-                      <div className="flex-shrink-0">
-                          <Image
-                              src={post.screenshotUrl}
-                              alt={`Screenshot for post: ${post.title}`}
-                              width={150}
-                              height={100}
-                              className="object-cover rounded-md"
-                              data-ai-hint="forum post"
-                          />
-                      </div>
-                  </div>
-                </Link>
-              ))}
             </CardContent>
           </Card>
         </TabsContent>
