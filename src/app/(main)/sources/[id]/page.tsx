@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit } from 'lucide-react';
+import { SourceUrls } from '@/components/source-urls';
 
 type DetailItemProps = {
   label: string;
@@ -59,6 +60,7 @@ export default function SourceDetailPage({ params }: { params: { id: string } })
         <TabsList className="mb-4">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="content">Latest Content</TabsTrigger>
+          <TabsTrigger value="urls">URLs</TabsTrigger>
         </TabsList>
         <TabsContent value="profile">
           <Card>
@@ -76,9 +78,6 @@ export default function SourceDetailPage({ params }: { params: { id: string } })
                             <DetailItem label="Monitoring" value={<Badge variant={source.monitoringStatus === 'Monitored' ? 'secondary' : 'outline'}>{source.monitoringStatus}</Badge>} />
                             <div className="sm:col-span-2">
                                 <DetailItem label="Description" value={source.description} />
-                            </div>
-                            <div className="sm:col-span-2">
-                                <DetailItem label="URLs" value={source.urls.map(url => <a href={url} key={url} className="block text-accent hover:underline" target="_blank" rel="noopener noreferrer">{url}</a>)} />
                             </div>
                             <div className="sm:col-span-2">
                                 <DetailItem label="Tags" value={<div className="flex flex-wrap gap-2">{source.tags.map(tag => <Badge key={tag} variant="outline">{tag}</Badge>)}</div>} />
@@ -137,6 +136,9 @@ export default function SourceDetailPage({ params }: { params: { id: string } })
               ))}
             </CardContent>
           </Card>
+        </TabsContent>
+        <TabsContent value="urls">
+          <SourceUrls urls={source.urls} sourceName={source.name} />
         </TabsContent>
       </Tabs>
     </>
