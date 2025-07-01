@@ -11,6 +11,7 @@ import {
   SidebarInset,
   SidebarTrigger,
   SidebarFooter,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Table2, Settings, Globe, LogOut } from "lucide-react";
@@ -27,7 +28,8 @@ export default function MainLayout({
 
   return (
     <SidebarProvider>
-      <Sidebar>
+      <Sidebar collapsible="icon">
+        <SidebarRail />
         <SidebarHeader>
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/20 text-primary">
