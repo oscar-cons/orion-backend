@@ -4,8 +4,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/page-header";
 import { dashboardMetrics, countryDistribution, sources } from "@/lib/data";
-import { Globe, Signal, SignalLow } from "lucide-react";
+import { Globe, Signal, SignalLow, Expand } from "lucide-react";
 import { WorldMapChart } from "@/components/world-map-chart";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
   const recentSources = sources.slice(0, 5);
@@ -82,17 +84,34 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Source Distribution by Country</CardTitle>
-            <CardDescription>Top countries hosting the monitored sources.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="w-full h-[350px]">
+        <Dialog>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Source Distribution by Country</CardTitle>
+                    <CardDescription>Top countries hosting the monitored sources.</CardDescription>
+                </div>
+                <DialogTrigger asChild>
+                    <Button variant="outline" size="icon">
+                        <Expand className="w-4 h-4" />
+                    </Button>
+                </DialogTrigger>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="w-full h-[350px]">
+                <WorldMapChart data={countryDistribution} />
+              </div>
+            </CardContent>
+          </Card>
+          <DialogContent className="w-[90vw] max-w-none h-[90vh] flex flex-col p-6">
+            <DialogHeader>
+              <DialogTitle>Source Distribution by Country</DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 w-full h-full pt-4">
               <WorldMapChart data={countryDistribution} />
             </div>
-          </CardContent>
-        </Card>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );
