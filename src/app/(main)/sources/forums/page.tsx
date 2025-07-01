@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/page-header";
-import { SourcesTable } from "@/components/sources-table";
+import { ForumTable } from "@/components/forum-table";
 
 export default function ForumsPage() {
   return (
@@ -8,7 +8,7 @@ export default function ForumsPage() {
         title="Forum Sources"
         description="Search and filter through all identified forum sources."
       />
-      <SourcesTable defaultTypeFilter="Forum" />
+      <ForumTable />
     </>
   );
 }
