@@ -54,11 +54,5 @@ npm run genkit:dev
 ```
 This starts the Genkit development server, which runs the AI flows your application uses.
 
-You are now ready to start developing your backend!
 
-### Publishing to GitHub
 
-I'm an AI assistant inside Firebase Studio and cannot directly publish projects to GitHub. To get this code into your own GitHub repository, you'll need to:
-1.  Download the project code from your Firebase Studio environment.
-2.  Create a new repository on GitHub.
-3.  Follow GitHub's instructions to initialize a new repository locally and push your project code.
