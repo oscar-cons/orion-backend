@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getSourceById, getSourceContent } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -32,6 +32,22 @@ function DetailItem({ label, value }: DetailItemProps) {
 export default function SourceDetailPage({ params }: { params: { id: string } }) {
   const [activeTab, setActiveTab] = useState('profile');
   const source = getSourceById(params.id);
+
+  const [formattedMetrics, setFormattedMetrics] = useState({
+    users: source?.userMetrics.users.toString() ?? '',
+    posts: source?.userMetrics.posts.toString() ?? '',
+    threads: source?.userMetrics.threads.toString() ?? '',
+  });
+
+  useEffect(() => {
+    if (source) {
+      setFormattedMetrics({
+        users: source.userMetrics.users.toLocaleString(),
+        posts: source.userMetrics.posts.toLocaleString(),
+        threads: source.userMetrics.threads.toLocaleString(),
+      });
+    }
+  }, [source]);
 
   if (!source) {
     notFound();
@@ -116,9 +132,9 @@ export default function SourceDetailPage({ params }: { params: { id: string } })
 
                         <h3 className="mb-4 text-lg font-semibold font-headline">User Metrics</h3>
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-                            <DetailItem label="Users" value={source.userMetrics.users.toLocaleString()} />
-                            <DetailItem label="Posts" value={source.userMetrics.posts.toLocaleString()} />
-                            <DetailItem label="Threads" value={source.userMetrics.threads.toLocaleString()} />
+                            <DetailItem label="Users" value={formattedMetrics.users} />
+                            <DetailItem label="Posts" value={formattedMetrics.posts} />
+                            <DetailItem label="Threads" value={formattedMetrics.threads} />
                         </div>
                     </div>
                     <div className="md:col-span-1">
