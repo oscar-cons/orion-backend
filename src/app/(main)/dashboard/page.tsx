@@ -1,0 +1,112 @@
+'use client';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/page-header";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { dashboardMetrics, countryDistribution, sources } from "@/lib/data";
+import { Globe, Signal, SignalLow } from "lucide-react";
+
+export default function DashboardPage() {
+  const recentSources = sources.slice(0, 5);
+
+  return (
+    <>
+      <PageHeader
+        title="Dashboard"
+        description="Overview of the monitored criminal web ecosystem."
+      />
+
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Total Sources</CardTitle>
+            <Globe className="w-4 h-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardMetrics.totalSources}</div>
+            <p className="text-xs text-muted-foreground">All monitored entities</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Active Sources</CardTitle>
+            <Signal className="w-4 h-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardMetrics.active}</div>
+            <p className="text-xs text-muted-foreground">Currently online and accessible</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Inactive Sources</CardTitle>
+            <SignalLow className="w-4 h-4 text-red-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardMetrics.inactive}</div>
+            <p className="text-xs text-muted-foreground">Offline or seized entities</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 mt-6 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="lg:col-span-4">
+          <CardHeader>
+            <CardTitle>Source Distribution by Country</CardTitle>
+            <CardDescription>Top countries hosting the monitored sources.</CardDescription>
+          </CardHeader>
+          <CardContent className="pl-2">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={countryDistribution} layout="vertical" margin={{ left: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
+                <XAxis type="number" hide />
+                <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} stroke="hsl(var(--muted-foreground))" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} width={80} />
+                <Tooltip
+                  cursor={{ fill: 'hsl(var(--card))' }}
+                  contentStyle={{
+                    background: 'hsl(var(--popover))',
+                    borderColor: 'hsl(var(--border))',
+                    borderRadius: 'var(--radius)',
+                  }}
+                />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Recently Added Sources</CardTitle>
+            <CardDescription>The latest sources identified and added to the system.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentSources.map((source) => (
+                  <TableRow key={source.id}>
+                    <TableCell className="font-medium">{source.name}</TableCell>
+                    <TableCell>{source.type}</TableCell>
+                    <TableCell>
+                      <Badge variant={source.status === 'Active' ? 'default' : 'destructive'} className={source.status === 'Active' ? 'bg-green-600/20 text-green-400 border-green-600/20' : 'bg-red-600/20 text-red-400 border-red-600/20'}>
+                        {source.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  );
+}
