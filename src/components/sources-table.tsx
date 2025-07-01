@@ -24,10 +24,10 @@ const natureStyles: { [key: string]: string } = {
     General: 'bg-gray-500/20 text-gray-400 border-gray-500/20',
 }
 
-export function SourcesTable() {
+export function SourcesTable({ defaultTypeFilter }: { defaultTypeFilter?: string }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState(defaultTypeFilter || 'all');
   const [countryFilter, setCountryFilter] = useState('all');
 
   const filteredSources = useMemo(() => {

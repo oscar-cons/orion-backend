@@ -90,8 +90,8 @@ export default function MainLayout({
                         </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild href="#">
-                            <Link href="#">Forums</Link>
+                        <SidebarMenuSubButton asChild isActive={pathname === "/sources/forums"}>
+                            <Link href="/sources/forums">Forums</Link>
                         </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
