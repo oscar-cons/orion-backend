@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { getSourceById, getSourceContent } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -29,7 +30,8 @@ function DetailItem({ label, value }: DetailItemProps) {
   );
 }
 
-export default function SourceDetailPage({ params }: { params: { id: string } }) {
+export default function SourceDetailPage() {
+  const params = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState('content');
   const source = getSourceById(params.id);
 
