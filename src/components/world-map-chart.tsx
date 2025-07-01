@@ -41,20 +41,20 @@ export function WorldMapChart({ data }: MapChartProps) {
                                             fill: countryData ? countryData.fill : 'hsl(var(--card))',
                                             outline: 'none',
                                             stroke: 'hsl(var(--border))',
-                                            strokeWidth: 0.75,
+                                            strokeWidth: 1,
                                         },
                                         hover: {
                                             fill: countryData ? countryData.fill : 'hsl(var(--card))',
                                             outline: 'none',
                                             stroke: 'hsl(var(--ring))',
-                                            strokeWidth: 1,
+                                            strokeWidth: 1.5,
                                             filter: 'brightness(1.2)'
                                         },
                                         pressed: {
                                             fill: countryData ? countryData.fill : 'hsl(var(--card))',
                                             outline: 'none',
                                             stroke: 'hsl(var(--ring))',
-                                            strokeWidth: 1,
+                                            strokeWidth: 1.5,
                                         },
                                     }}
                                 />
@@ -63,7 +63,7 @@ export function WorldMapChart({ data }: MapChartProps) {
                     }
                 </Geographies>
             </ComposableMap>
-            <ReactTooltip id="map-tooltip" />
+            <ReactTooltip id="map-tooltip" openOnClick={true} />
         </>
     );
 }
