@@ -124,7 +124,7 @@ export default function SourceDetailPage({ params }: { params: { id: string } })
             </CardHeader>
             <CardContent className="space-y-4">
               {content.map(post => (
-                <Link href="#" key={post.id} className="block group">
+                <Link href={`/sources/${source.id}/${post.id}`} key={post.id} className="block group">
                   <div className="flex items-start justify-between gap-6 p-4 border rounded-lg bg-card/50 group-hover:border-primary/50 group-hover:shadow-lg transition-all">
                       <div className="flex-1">
                           <h4 className="font-semibold text-primary-foreground group-hover:text-primary">{post.title}</h4>
