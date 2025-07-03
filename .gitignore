@@ -1,7 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+frontend/node_modules
+backend-fastapi/venv
 /.pnp
 .pnp.*
 .yarn/*
@@ -14,7 +15,7 @@
 /coverage
 
 # next.js
-/.next/
+/frontend/.next/
 /out/
 
 # production
@@ -43,3 +44,18 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# OS
+Thumbs.db
+
+# Env files
+.env
+.env.*
+
+# DB
+postgresql_data/

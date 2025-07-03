@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, ChevronDown, MoreHorizontal, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -44,6 +44,7 @@ import { ChevronRight } from "lucide-react";
 export type Forum = {
   id: string;
   name: string;
+  description: string;
   url: string;
   status: "Active" | "Inactive" | "Pending";
   country: string;
@@ -55,6 +56,13 @@ export const columns: ColumnDef<Forum>[] = [
     header: "Name",
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("name")}</div>
+    ),
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("description")}</div>
     ),
   },
   {
@@ -111,21 +119,30 @@ export function ForumTable() {
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
   const [searchTerm, setSearchTerm] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState('all');
   const [countryFilter, setCountryFilter] = React.useState('all');
+  const [forumSources, setForumSources] = React.useState<Forum[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [reloadKey, setReloadKey] = React.useState(0);
 
-  const forumSources = React.useMemo(() => sources
-    .filter(source => source.type === "Forum")
-    .map(source => ({
-      id: source.id,
-      name: source.name,
-      url: source.urls[0] || '',
-      status: source.status,
-      country: source.country,
-  }) as Forum), []);
-
+  React.useEffect(() => {
+    setLoading(true);
+    fetch("http://127.0.0.1:8000/forums")
+      .then(res => res.json())
+      .then(data => {
+        const mapped = data.map((forum: any) => ({
+          id: forum.id,
+          name: forum.name,
+          description: forum.description || "",
+          url: "",
+          status: forum.status ? "Active" : "Inactive",
+          country: forum.country,
+        }));
+        setForumSources(mapped);
+        setLoading(false);
+      });
+  }, [reloadKey]);
 
   const filteredData = React.useMemo(() => {
     return forumSources.filter(forum =>
@@ -143,15 +160,13 @@ export function ForumTable() {
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationModel: getPaginationRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection,
     },
   });
 
@@ -159,6 +174,8 @@ export function ForumTable() {
     const countryList = forumSources.map(forum => forum.country);
     return Array.from(new Set(countryList)).sort();
   }, [forumSources]);
+
+  if (loading) return <div>Cargando foros...</div>;
 
   return (
     <div className="w-full">
@@ -191,6 +208,13 @@ export function ForumTable() {
                 ))}
             </SelectContent>
         </Select>
+        <button
+          className="ml-auto p-2 rounded hover:bg-gray-100"
+          onClick={() => setReloadKey(k => k + 1)}
+          title="Recargar foros"
+        >
+          <RotateCcw className="w-5 h-5" />
+        </button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -243,7 +267,6 @@ export function ForumTable() {
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -269,10 +292,6 @@ export function ForumTable() {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
         <div className="space-x-2">
           <Button
             variant="outline"
@@ -295,3 +314,4 @@ export function ForumTable() {
     </div>
   );
 }
+

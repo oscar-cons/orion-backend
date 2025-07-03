@@ -80,24 +80,29 @@ export default function MainLayout({
                 <CollapsibleContent>
                   <SidebarMenuSub>
                     <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname === "/sources"}>
-                            <Link href="/sources">All Sources</Link>
-                        </SidebarMenuSubButton>
+                      <SidebarMenuSubButton asChild isActive={pathname === "/sources"}>
+                        <Link href="/sources">All Sources</Link>
+                      </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild href="#">
-                            <Link href="#">Ransomware</Link>
-                        </SidebarMenuSubButton>
+                      <SidebarMenuSubButton asChild isActive={pathname === "/sources/add"}>
+                        <Link href="/sources/add">Añadir Source</Link>
+                      </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild isActive={pathname === "/sources/forums"}>
-                            <Link href="/sources/forums">Forums</Link>
-                        </SidebarMenuSubButton>
+                      <SidebarMenuSubButton asChild href="#">
+                        <Link href="#">Ransomware</Link>
+                      </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                     <SidebarMenuSubItem>
-                        <SidebarMenuSubButton asChild href="#">
-                            <Link href="#">Telegram</Link>
-                        </SidebarMenuSubButton>
+                      <SidebarMenuSubButton asChild isActive={pathname === "/sources/forums"}>
+                        <Link href="/sources/forums">Forums</Link>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <SidebarMenuSubButton asChild href="#">
+                        <Link href="#">Telegram</Link>
+                      </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   </SidebarMenuSub>
                 </CollapsibleContent>
