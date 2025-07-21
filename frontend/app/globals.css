@@ -83,3 +83,46 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Scrollbar global styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: hsl(var(--muted));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.6);
+  border-radius: 9999px;
+  transition: background 0.2s;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
+}
+::-webkit-scrollbar-corner {
+  background: hsl(var(--muted));
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary) / 0.6) hsl(var(--muted));
+  transition: scrollbar-color 0.2s;
+}
+
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar {
+    background: hsl(var(--muted));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.7);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+  }
+  ::-webkit-scrollbar-corner {
+    background: hsl(var(--muted));
+  }
+  * {
+    scrollbar-color: hsl(var(--primary) / 0.7) hsl(var(--muted));
+  }
+}

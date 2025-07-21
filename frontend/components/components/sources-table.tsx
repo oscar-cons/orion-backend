@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -8,8 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { sources as allSources, Source } from '@/lib/data';
 import { ChevronRight } from 'lucide-react';
+import { ReloadButton } from './ui/reload-button';
 
 const statusStyles: { [key: string]: string } = {
   Active: 'bg-green-600/20 text-green-400 border-green-600/20',
@@ -29,19 +29,37 @@ export function SourcesTable({ defaultTypeFilter }: { defaultTypeFilter?: string
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState(defaultTypeFilter || 'all');
   const [countryFilter, setCountryFilter] = useState('all');
+  const [sources, setSources] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const handleReload = () => {
+    setReloadKey(k => k + 1);
+  };
 
   const filteredSources = useMemo(() => {
-    return allSources.filter(source =>
-      (source.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       source.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))) &&
+    return sources.filter(source =>
+      source.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
       (statusFilter === 'all' || source.status === statusFilter) &&
       (typeFilter === 'all' || source.type === typeFilter) &&
       (countryFilter === 'all' || source.country === countryFilter)
     );
-  }, [searchTerm, statusFilter, typeFilter, countryFilter]);
+  }, [searchTerm, statusFilter, typeFilter, countryFilter, sources]);
 
-  const uniqueCountries = useMemo(() => [...new Set(allSources.map(s => s.country))], []);
-  const uniqueTypes = useMemo(() => [...new Set(allSources.map(s => s.type))], []);
+  const uniqueCountries = useMemo(() => [...new Set(sources.map(s => s.country))], [sources]);
+  const uniqueTypes = useMemo(() => [...new Set(sources.map(s => s.type))], [sources]);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch("http://127.0.0.1:8000/sources")
+      .then(res => res.json())
+      .then(data => {
+        setSources(data);
+        setLoading(false);
+      });
+  }, [reloadKey]);
+
+  if (loading) return <div>Cargando fuentes...</div>;
 
   return (
     <Card>
@@ -77,6 +95,7 @@ export function SourcesTable({ defaultTypeFilter }: { defaultTypeFilter?: string
               </SelectContent>
             </Select>
           </div>
+          <ReloadButton onClick={handleReload} isLoading={loading} />
         </div>
         <div className="border rounded-md">
             <Table>
@@ -99,12 +118,14 @@ export function SourcesTable({ defaultTypeFilter }: { defaultTypeFilter?: string
                         <Badge variant="outline" className={natureStyles[source.nature]}>{source.nature}</Badge>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                        <Badge variant="outline" className={statusStyles[source.status]}>{source.status}</Badge>
+                        <Badge variant={source.status === "Active" || source.status === true ? "default" : "destructive"}>
+                            {source.status === true ? "Active" : source.status === false ? "Inactive" : source.status}
+                        </Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">{source.country}</TableCell>
                     <TableCell className="text-right">
                         <Button variant="ghost" size="icon" asChild>
-                            <Link href={`/sources/${source.id}`}>
+                            <Link href={`/sources/${source.type}/${source.id}`}>
                                 <ChevronRight className="w-4 h-4" />
                                 <span className="sr-only">View Details</span>
                             </Link>

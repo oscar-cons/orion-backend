@@ -41,6 +41,7 @@ import { sources } from "@/lib/data";
 import Link from "next/link";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { ChevronRight } from "lucide-react";
+import { ReloadButton } from "./ui/reload-button";
 export type Forum = {
   id: string;
   name: string;
@@ -102,7 +103,7 @@ export const columns: ColumnDef<Forum>[] = [
       const forum = row.original;
 
       return (
-        <Link href={`/sources/${forum.id}`}>
+        <Link href={`/sources/forum/${forum.id}`}>
           <Button variant="ghost" className="h-8 w-8 p-0 ml-auto">
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -125,6 +126,10 @@ export function ForumTable() {
   const [forumSources, setForumSources] = React.useState<Forum[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [reloadKey, setReloadKey] = React.useState(0);
+
+  const handleReload = () => {
+    setReloadKey(k => k + 1);
+  };
 
   React.useEffect(() => {
     setLoading(true);
@@ -208,39 +213,35 @@ export function ForumTable() {
                 ))}
             </SelectContent>
         </Select>
-        <button
-          className="ml-auto p-2 rounded hover:bg-gray-100"
-          onClick={() => setReloadKey(k => k + 1)}
-          title="Recargar foros"
-        >
-          <RotateCcw className="w-5 h-5" />
-        </button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="ml-auto flex items-center gap-2">
+          <ReloadButton onClick={handleReload} isLoading={loading} />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto">
+                Columns <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
       <div className="rounded-md border">
         <Table>

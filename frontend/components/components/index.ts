@@ -1,0 +1,1 @@
+export { RansomwareTable } from "./ransomware-table"; 

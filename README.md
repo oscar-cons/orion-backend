@@ -1,58 +1,60 @@
-# Firebase Studio Project - DarkWeb Insights
+# DarkWeb Insights - Studio
 
-This is a Next.js application built in Firebase Studio for monitoring the criminal web ecosystem. It uses Next.js, React, ShadCN, Tailwind CSS, and Genkit for AI features.
+Este proyecto es una plataforma de monitoreo del ecosistema criminal web, compuesta por un frontend en Next.js y un backend en FastAPI, utilizando PostgreSQL como base de datos.
 
-## Running Locally
+## Estructura del Proyecto
 
-To run this project on your local machine for backend development (e.g., in Cursor), follow these steps.
+- **frontend/**: Aplicación Next.js (React, ShadCN, Tailwind CSS)
+- **backend-fastapi/**: API REST construida con FastAPI
+- **postgresql_data/**: Carpeta para los datos de la base de datos PostgreSQL
 
-### Prerequisites
+## Requisitos Previos
 
-*   [Node.js](https://nodejs.org/) (version 20 or later recommended)
-*   [npm](https://www.npmjs.com/) (usually comes with Node.js)
-*   [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) (for authenticating Genkit)
+- [Node.js](https://nodejs.org/) (v20 o superior recomendado)
+- [npm](https://www.npmjs.com/)
+- [Python 3.10+](https://www.python.org/)
+- [PostgreSQL](https://www.postgresql.org/) (o usar el script incluido)
 
-### 1. Set up your Environment
+## 1. Instalación de Dependencias
 
-First, install the project dependencies:
+### Frontend
 ```bash
+cd frontend
 npm install
 ```
 
-### 2. Configure Environment Variables
-
-This project uses Genkit with Google AI. To authenticate your local environment, you need to set up Application Default Credentials for Google Cloud.
-
-Run the following command in your terminal:
+### Backend
 ```bash
-gcloud auth application-default login
-```
-This will open a browser window for you to log in to your Google account and authorize access.
-
-Alternatively, you can create a `.env.local` file in the root of the project and add your Google AI API key:
-
-```
-# .env.local
-GOOGLE_API_KEY="your_google_api_key_here"
+cd backend-fastapi
+pip install -r requirements.txt
 ```
 
-You can get an API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+## 2. Configuración de la Base de Datos
 
-### 3. Run the Development Servers
+Asegúrate de tener PostgreSQL corriendo. Puedes usar el script `postgres_control.bat` para iniciar el servicio en Windows, o configurar tu propia instancia.
 
-This project has two main parts that need to run simultaneously in separate terminal windows:
+Configura las variables de entorno necesarias en el backend para la conexión a la base de datos (verifica el archivo `backend-fastapi/app/database.py`).
 
-**Terminal 1: Start the Next.js Frontend**
+## 3. Ejecución de los Servidores
+
+### Iniciar el Backend (FastAPI)
 ```bash
+cd backend-fastapi
+uvicorn app.main:app --reload
+```
+Por defecto, estará disponible en [http://localhost:8000](http://localhost:8000)
+
+### Iniciar el Frontend (Next.js)
+```bash
+cd frontend
 npm run dev
 ```
-This will start the Next.js application, usually on [http://localhost:3000](http://localhost:3000).
+Por defecto, estará disponible en [http://localhost:3000](http://localhost:3000)
 
-**Terminal 2: Start the Genkit AI Backend**
-```bash
-npm run genkit:dev
-```
-This starts the Genkit development server, which runs the AI flows your application uses.
+## 4. Notas Adicionales
+
+- Personaliza las variables de entorno según tu entorno local.
+- Consulta la carpeta `docs/` para documentación adicional sobre la arquitectura y el flujo de datos.
 
 
 
