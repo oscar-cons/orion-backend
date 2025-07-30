@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, Body
 from fastapi.responses import FileResponse
 import os
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import or_, and_, Date, cast, DateTime
+from sqlalchemy.orm import selectinload
 from ..database import get_db
 from .. import crud, schemas, models
-from ..schemas import ForumPostCreate, ForumPostOut, ForumOut, ForumCreate, RansomwareOut, SourceOut
+
 from uuid import UUID
 from typing import List
 from datetime import datetime, timedelta, timezone
@@ -41,6 +42,8 @@ async def get_forum_posts(forum_id: UUID, db: AsyncSession = Depends(get_db)):
     posts = result.scalars().all()
     return posts
 
+
+
 @router.get("/forum-posts/{post_id}", response_model=schemas.ForumPostOut)
 async def get_forum_post(post_id: UUID, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(models.ForumPost).where(models.ForumPost.id == post_id))
@@ -49,14 +52,69 @@ async def get_forum_post(post_id: UUID, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Forum post not found")
     return post
 
+@router.patch("/forum-posts/{post_id}", response_model=schemas.ForumPostOut)
+async def update_forum_post(post_id: UUID, data: dict = Body(...), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(models.ForumPost).where(models.ForumPost.id == post_id))
+    post = result.scalar_one_or_none()
+    if not post:
+        raise HTTPException(status_code=404, detail="Forum post not found")
+    for key, value in data.items():
+        if hasattr(post, key):
+            setattr(post, key, value)
+    await db.commit()
+    await db.refresh(post)
+    return post
+
 @router.get("/forum-posts/{post_id}/screenshot")
-async def get_forum_post_screenshot(post_id: str):
+async def get_forum_post_screenshot(post_id: str, db: AsyncSession = Depends(get_db)):
+    print(f"--- DEBUG: Received request for screenshot for post_id: {post_id} ---")
+    from uuid import UUID
+    try:
+        post_uuid = UUID(post_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid post_id format")
+
+    result = await db.execute(select(models.ForumPost).where(models.ForumPost.id == post_uuid))
+    post = result.scalar_one_or_none()
+
+    if not post:
+        print("--- DEBUG: Post not found in database. ---")
+        raise HTTPException(status_code=404, detail="Post not found in DB")
+
+    print(f"--- DEBUG: Post found. Checking for screenshotUrl... ---")
+    
+    custom_path = getattr(post, "screenshotUrl", None)
+
+    if custom_path:
+        # Limpiar la ruta de comillas y espacios extra
+        cleaned_path = custom_path.strip().strip('\'"')
+        print(f"--- DEBUG: screenshotUrl found in DB: '{custom_path}' ---")
+        print(f"--- DEBUG: Cleaned path for check: '{cleaned_path}' ---")
+        
+        normalized_path = os.path.normpath(cleaned_path)
+        print(f"--- DEBUG: Normalized path: '{normalized_path}' ---")
+
+        file_exists = os.path.isfile(normalized_path)
+        print(f"--- DEBUG: os.path.isfile() on normalized path returned: {file_exists} ---")
+
+        if file_exists:
+            ext = os.path.splitext(normalized_path)[1].lstrip(".")
+            print(f"--- DEBUG: File exists. Serving file. ---")
+            return FileResponse(normalized_path, media_type=f"image/{ext}")
+        else:
+            print(f"--- DEBUG: File does not exist at path: '{normalized_path}' ---")
+    else:
+        print("--- DEBUG: screenshotUrl not found or is empty in the database. ---")
+
+    print("--- DEBUG: Falling back to old logic (searching in screenshots/ directory)... ---")
     screenshots_dir = os.path.join(os.path.dirname(__file__), '../../screenshots')
-    # Buscar por extensiones comunes
     for ext in [".png", ".jpg", ".jpeg", ".webp"]:
         image_path = os.path.abspath(os.path.join(screenshots_dir, f"{post_id}{ext}"))
         if os.path.isfile(image_path):
+            print(f"--- DEBUG: Found file in fallback directory: {image_path} ---")
             return FileResponse(image_path, media_type=f"image/{ext.lstrip('.')}")
+    
+    print("--- DEBUG: Screenshot not found in custom path or fallback directory. Raising 404. ---")
     raise HTTPException(status_code=404, detail="Screenshot not found")
 
 @router.delete("/delete-forum-posts")
@@ -65,10 +123,26 @@ async def delete_forum_posts(forum_id: UUID = Query(...), db: AsyncSession = Dep
     await db.commit()
     return {"detail": "Entradas eliminadas correctamente"}
 
+@router.delete("/forum-posts/{post_id}")
+async def delete_forum_post(post_id: UUID, db: AsyncSession = Depends(get_db)):
+    # Query the database for the post by ID
+    result = await db.execute(select(models.ForumPost).where(models.ForumPost.id == post_id))
+    post = result.scalar_one_or_none()
+
+    # If post does not exist, return 404 error
+    if not post:
+        raise HTTPException(status_code=404, detail="Forum post not found")
+
+    # Delete the post and commit the transaction
+    await db.delete(post)
+    await db.commit()
+
+    return {"detail": "Forum post deleted successfully"}
+
 @router.get("/search", response_model=dict)
 async def global_search(
     q: str = Query(None, description="Término de búsqueda global"),
-    entity: str = Query(None, description="Filtrar por entidad (separadas por coma): forum-posts,ransomware,telegram"),
+    entity: str = Query(None, description="Filtrar por entidad (separadas por coma): forum-posts,ransomware-group-entry,telegram"),
     filter: List[str] = Query([], description="Filtros avanzados en formato campo:operador:valor"),
     db: AsyncSession = Depends(get_db)
 ):
@@ -139,25 +213,28 @@ async def global_search(
         else:
             results["forum-posts"] = []
 
-    # Search in Ransomware
+    # Search in Ransomware Entries
     if not entities or "ransomware" in entities:
-        query = select(models.Ransomware)
+        query = select(models.RansomwareEntry).options(selectinload(models.RansomwareEntry.group))
+
         if is_q_search:
             query = query.where(
                 or_(
-                    models.Ransomware.BreachName.ilike(f"%{q}%"),
-                    models.Ransomware.Domain.ilike(f"%{q}%"),
-                    models.Ransomware.Category.ilike(f"%{q}%"),
-                    models.Ransomware.Country.ilike(f"%{q}%"),
-                    models.Ransomware.Group.ilike(f"%{q}%")
+                    models.RansomwareEntry.BreachName.ilike(f"%{q}%"),
+                    models.RansomwareEntry.Domain.ilike(f"%{q}%"),
+                    models.RansomwareEntry.Category.ilike(f"%{q}%"),
+                    models.RansomwareEntry.Country.ilike(f"%{q}%"),
+                    models.RansomwareGroup.group_name.ilike(f"%{q}%")  # Relación
                 )
             )
-        
-        query, filters_applied = apply_filters(query, models.Ransomware, filter)
-        
+
+        # Aplica filtros sobre RansomwareEntry (puedes extender apply_filters para incluir joins si necesario)
+        query, filters_applied = apply_filters(query, models.RansomwareEntry, filter)
+
         if is_q_search or filters_applied:
-            ransomware = await db.execute(query)
-            results["ransomware"] = [schemas.RansomwareOut.from_orm(r) for r in ransomware.scalars().all()]
+            result = await db.execute(query)
+            entries = result.scalars().all()
+            results["ransomware"] = [schemas.RansomwareEntryOut.from_orm(e) for e in entries]
         else:
             results["ransomware"] = []
 
@@ -186,4 +263,3 @@ async def global_search(
             
     return results
 
-# ...otros endpoints relacionados a foros...

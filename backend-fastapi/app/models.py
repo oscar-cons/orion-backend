@@ -7,9 +7,9 @@ from sqlalchemy.orm import relationship
 import enum
 
 class MonitoredEnum(enum.Enum):
-    YES_MANUAL = "yes manual"
-    YES_AUTOMATED = "yes automated"
-    NO = "No"
+    YES_MANUAL = "YES_MANUAL"
+    YES_AUTOMATED = "YES_AUTOMATED"
+    NO = "NO"
 
 class Source(Base):
     __tablename__ = "sources"
@@ -24,7 +24,7 @@ class Source(Base):
     language = Column(String, nullable=False)
     associated_domains = Column(ARRAY(String), nullable=True)  # Array of domains
     owner = Column(String, nullable=True)
-    monitored = Column(Enum(MonitoredEnum), nullable=False, default=MonitoredEnum.NO)
+    monitored = Column(String, nullable=True, default="NO")
     discovery_source = Column(String, nullable=True)
     __mapper_args__ = {
         "polymorphic_identity": "source",
@@ -46,9 +46,23 @@ class Forum(Source):
     }
 
 
-class Ransomware(Source):
-    __tablename__ = "ransomware"
+class RansomwareGroup(Source):
+    __tablename__ = "ransomware_groups"
     id = Column(UUID(as_uuid=True), ForeignKey("sources.id"), primary_key=True)
+    group_name = Column(String, nullable=False, unique=True)
+    # Add any ransomware group-specific fields here if needed
+
+    entries = relationship("RansomwareEntry", back_populates="group", cascade="all, delete-orphan")
+
+    __mapper_args__ = {
+        "polymorphic_identity": "ransomware_group",
+    }
+
+
+class RansomwareEntry(Base):
+    __tablename__ = "ransomware_entries"
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    group_id = Column(UUID(as_uuid=True), ForeignKey("ransomware_groups.id"), nullable=False)
     BreachName = Column(String, nullable=False)
     Domain = Column(String, nullable=True)
     Rank = Column(String, nullable=True)
@@ -56,11 +70,15 @@ class Ransomware(Source):
     DetectionDate = Column(DateTime(timezone=True), nullable=False)
     Country = Column(String, nullable=True)
     OriginalSource = Column(String, nullable=True)
-    Group = Column(String, nullable=False)
     Download = Column(String, nullable=True)
-   
+    ai_summary = Column(Text, nullable=True)
+    ai_tags = Column(ARRAY(String), nullable=True)
+    # group_name is inherited from RansomwareGroup via the relationship, so no need to redefine it here.
+
+    group = relationship("RansomwareGroup", back_populates="entries")
+
     __mapper_args__ = {
-        "polymorphic_identity": "ransomware",
+        "polymorphic_identity": "ransomware_entry",
     }
 
 
@@ -88,5 +106,7 @@ class ForumPost(Base):
     number_comments = Column(Integer, nullable=False, default=0)
     date = Column(DateTime(timezone=True), nullable=False)
     forum = relationship("Forum", back_populates="posts")
-
+    ai_summary = Column(Text, nullable=True)
+    ai_tags = Column(ARRAY(String), nullable=True)
+    screenshotUrl = Column(String, nullable=True)
 

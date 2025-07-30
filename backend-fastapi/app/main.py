@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import SessionLocal, engine, Base
-from .routers import forum, source, ransomware, telegram
-from .routers import admin
+from .routers import forum, source, admin, ai, ransomware
 
 app = FastAPI()
 
@@ -22,8 +21,8 @@ async def startup():
 app.include_router(forum.router)
 app.include_router(source.router)
 app.include_router(ransomware.router)
-app.include_router(telegram.router)
 app.include_router(admin.router)
+app.include_router(ai.router)
 
 @app.post("/mockup-data/")
 async def create_mockup_data_route():
