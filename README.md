@@ -1,192 +1,179 @@
-# Orion Backend - VPS Deployment Guide
+# Orion Backend
 
-## 🚀 Production Deployment
+A FastAPI-based backend application for ransomware intelligence and analysis.
 
-This guide will help you deploy the Orion Backend application to a VPS.
+## 🚀 Quick Start (Hostinger EasyPanel Ready)
 
-### Prerequisites
+This project is **optimized for Hostinger EasyPanel** and designed to work out of the box with minimal configuration.
 
-- VPS with Ubuntu 20.04+ or similar Linux distribution
-- Docker and Docker Compose installed
-- Domain name (optional but recommended)
-- SSL certificates (for HTTPS)
-
-### 1. Server Setup
+### 1. Clone the Repository
 
 ```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
-
-# Install Docker
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-sudo usermod -aG docker $USER
-
-# Install Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-
-# Logout and login again for group changes to take effect
+git clone https://github.com/oscar-cons/orion-backend.git
+cd orion-backend
 ```
 
-### 2. Clone and Configure
+### 2. Configure Environment (Required)
 
 ```bash
-# Clone your repository
-git clone <your-repo-url>
-cd orion-backend
-
-# Copy environment template
+# Copy the environment template
 cp backend-fastapi/env.example backend-fastapi/.env
 
-# Edit environment variables
+# Edit the configuration
 nano backend-fastapi/.env
 ```
 
-### 3. Environment Configuration
+**Minimum required changes in `.env`:**
+- `DB_PASSWORD`: Change to a secure password
+- `GOOGLE_API_KEY`: Optional, but needed for AI features
 
-Edit `backend-fastapi/.env` with your production values:
+### 3. Deploy
+
+```bash
+# Start the application
+docker-compose up --build
+```
+
+That's it! The application will be available at:
+- **API Documentation**: http://localhost:8000/docs
+- **Health Check**: http://localhost:8000/health
+- **Database**: localhost:5433
+
+## 🌐 Hostinger EasyPanel Deployment
+
+### Quick Deploy on Hostinger:
+
+1. **Login to Hostinger EasyPanel**
+2. **Create new project** → Select "Git Repository"
+3. **Enter repository URL**: `https://github.com/oscar-cons/orion-backend`
+4. **Select branch**: `v0.5-beta-docker`
+5. **Configure environment variables**:
+   - `DB_PASSWORD`: Your secure password
+   - `ENVIRONMENT`: `production`
+   - `DEBUG`: `false`
+6. **Deploy!**
+
+**Hostinger Optimizations:**
+- ✅ Resource limits configured (768MB total)
+- ✅ Alpine images for smaller size
+- ✅ Health checks enabled
+- ✅ Automatic restart policies
+- ✅ Optimized for Hostinger's infrastructure
+
+See [HOSTINGER_EASYPANEL.md](HOSTINGER_EASYPANEL.md) for detailed instructions.
+
+## 📋 Environment Configuration
+
+The `.env` file contains these settings:
 
 ```env
 # Database Configuration
 DB_HOST=postgres
 DB_PORT=5432
-DB_USER=your_secure_username
-DB_PASSWORD=your_very_secure_password
-DB_NAME=inteligencia
+DB_USER=orion_user
+DB_PASSWORD=your_secure_password_here
+DB_NAME=orion
 
-# Google AI API Configuration
+# Google AI API Configuration (Optional)
 GOOGLE_API_KEY=your_google_api_key_here
 
 # Application Configuration
-ENVIRONMENT=production
-DEBUG=false
+ENVIRONMENT=development
+DEBUG=true
 ```
 
-### 4. SSL Certificates
+## 🛠️ Advanced Deployment
 
-#### Option A: Let's Encrypt (Recommended)
+### Development Mode
 ```bash
-# Install Certbot
-sudo apt install certbot
-
-# Generate certificates
-sudo certbot certonly --standalone -d your-domain.com
-
-# Copy certificates to project directory
-sudo mkdir -p ssl
-sudo cp /etc/letsencrypt/live/your-domain.com/fullchain.pem ssl/cert.pem
-sudo cp /etc/letsencrypt/live/your-domain.com/privkey.pem ssl/key.pem
-sudo chown $USER:$USER ssl/*
+./deploy.sh dev
 ```
 
-#### Option B: Self-signed (Testing only)
+### Production Mode
 ```bash
-mkdir -p ssl
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout ssl/key.pem -out ssl/cert.pem \
-  -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+./deploy.sh production
 ```
 
-### 5. Deploy
+### Manual Docker Commands
 
 ```bash
-# Make deployment script executable
-chmod +x deploy.sh
+# Start services
+docker-compose up -d
 
-# Run deployment
-./deploy.sh
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Reset database
+docker-compose down -v
+docker-compose up --build
 ```
 
-### 6. Firewall Configuration
+## 🔧 Troubleshooting
+
+### Common Issues
+
+1. **Port already in use**: Change ports in `docker-compose.yml`
+2. **Database connection failed**: Check `.env` configuration
+3. **AI features not working**: Add `GOOGLE_API_KEY` to `.env`
+
+### Health Checks
 
 ```bash
-# Allow HTTP and HTTPS
-sudo ufw allow 80
-sudo ufw allow 443
+# Check backend health
+curl http://localhost:8000/health
 
-# Enable firewall
-sudo ufw enable
+# Check database
+docker-compose exec postgres pg_isready -U orion_user
 ```
 
-### 7. Domain Configuration
+### Hostinger-Specific Issues
 
-If using a domain name, point it to your VPS IP address in your DNS provider.
+1. **Build timeout**: Try redeploying (Hostinger has time limits)
+2. **Memory limits**: Monitor resource usage in EasyPanel
+3. **Port conflicts**: Hostinger assigns ports automatically
 
-### 8. Monitoring and Maintenance
+## 📁 Project Structure
 
-#### View logs
-```bash
-# All services
-docker-compose -f docker-compose.prod.yml logs -f
-
-# Specific service
-docker-compose -f docker-compose.prod.yml logs -f backend
+```
+orion-backend/
+├── backend-fastapi/          # FastAPI application
+│   ├── app/
+│   │   ├── routers/         # API endpoints
+│   │   ├── models.py        # Database models
+│   │   ├── schemas.py       # Pydantic schemas
+│   │   └── main.py          # Application entry point
+│   ├── alembic/             # Database migrations
+│   └── requirements.txt     # Python dependencies
+├── docker-compose.yml       # Development environment (Hostinger optimized)
+├── docker-compose.prod.yml  # Production environment
+├── deploy.sh               # Deployment script
+├── HOSTINGER_EASYPANEL.md  # Hostinger-specific guide
+├── hostinger-config.json   # Hostinger configuration
+└── README.md               # This file
 ```
 
-#### Update application
-```bash
-# Pull latest changes
-git pull
+## 🔒 Security Notes
 
-# Redeploy
-./deploy.sh
-```
+- Change default passwords in production
+- Use HTTPS in production environments
+- Configure firewall rules appropriately
+- Keep dependencies updated
+- **For Hostinger**: Set `ENVIRONMENT=production` and `DEBUG=false`
 
-#### Backup database
-```bash
-# Create backup
-docker-compose -f docker-compose.prod.yml exec postgres pg_dump -U $DB_USER $DB_NAME > backup.sql
+## 📞 Support
 
-# Restore backup
-docker-compose -f docker-compose.prod.yml exec -T postgres psql -U $DB_USER $DB_NAME < backup.sql
-```
-
-### 9. Security Checklist
-
-- [ ] Strong database password
-- [ ] Valid SSL certificates
-- [ ] Firewall configured
-- [ ] Database not exposed externally
-- [ ] Environment variables secured
-- [ ] Regular backups configured
-- [ ] Monitoring/logging enabled
-
-### 10. Troubleshooting
-
-#### Check service status
-```bash
-docker-compose -f docker-compose.prod.yml ps
-```
-
-#### Check service health
-```bash
-curl -f https://your-domain.com/health
-```
-
-#### View detailed logs
-```bash
-docker-compose -f docker-compose.prod.yml logs backend
-```
-
-#### Restart services
-```bash
-docker-compose -f docker-compose.prod.yml restart
-```
-
-### 11. Performance Optimization
-
-- Monitor resource usage: `docker stats`
-- Adjust memory limits in `docker-compose.prod.yml` if needed
-- Consider using a CDN for static assets
-- Implement database connection pooling
-- Set up monitoring with tools like Prometheus/Grafana
+For issues or questions:
+1. Check the troubleshooting section
+2. Review the API documentation at `/docs`
+3. Check application logs: `docker-compose logs -f`
+4. **For Hostinger**: See [HOSTINGER_EASYPANEL.md](HOSTINGER_EASYPANEL.md)
 
 ---
 
-## 🎉 Your application is now ready for production!
-
-Access your API at: `https://your-domain.com/docs`
+**Note**: This project is specifically optimized for Hostinger EasyPanel deployment. The default configuration provides a working setup that respects Hostinger's resource limits and requirements.
 
 
 

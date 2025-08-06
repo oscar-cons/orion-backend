@@ -1,0 +1,69 @@
+{
+  "name": "Orion Backend - Hostinger",
+  "description": "FastAPI-based backend application optimized for Hostinger EasyPanel",
+  "repository": "https://github.com/oscar-cons/orion-backend",
+  "keywords": ["fastapi", "python", "postgresql", "docker", "api", "hostinger"],
+  "env": {
+    "DB_USER": {
+      "description": "Database username",
+      "value": "orion_user",
+      "required": false
+    },
+    "DB_PASSWORD": {
+      "description": "Database password (REQUIRED - Change this!)",
+      "value": "change_this_password",
+      "required": true
+    },
+    "DB_NAME": {
+      "description": "Database name",
+      "value": "orion",
+      "required": false
+    },
+    "GOOGLE_API_KEY": {
+      "description": "Google AI API Key (Optional - for AI features)",
+      "value": "",
+      "required": false
+    },
+    "ENVIRONMENT": {
+      "description": "Environment (production recommended for Hostinger)",
+      "value": "production",
+      "required": false
+    },
+    "DEBUG": {
+      "description": "Debug mode (false recommended for Hostinger)",
+      "value": "false",
+      "required": false
+    }
+  },
+  "hostinger": {
+    "resource_limits": {
+      "memory": "768M",
+      "cpu": "0.5",
+      "storage": "10GB"
+    },
+    "ports": {
+      "backend": 8000,
+      "database": 5433
+    },
+    "health_checks": {
+      "enabled": true,
+      "endpoint": "/health",
+      "interval": "30s"
+    },
+    "optimizations": {
+      "alpine_images": true,
+      "resource_limits": true,
+      "health_checks": true
+    }
+  },
+  "deployment": {
+    "method": "docker-compose",
+    "compose_file": "docker-compose.yml",
+    "branch": "v0.5-beta-docker"
+  },
+  "support": {
+    "documentation": "https://github.com/oscar-cons/orion-backend",
+    "health_check": "/health",
+    "api_docs": "/docs"
+  }
+} 

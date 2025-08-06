@@ -1,26 +1,38 @@
 # Usage: docker-compose up --build
 # This starts a clean FastAPI + PostgreSQL environment inside Docker.
 # To reset database: docker-compose down -v
+#
+# ⚠️  IMPORTANT: Before running, make sure to configure your .env file!
+#    Copy backend-fastapi/env.example to backend-fastapi/.env and configure it.
+#
+# Optimized for Hostinger EasyPanel deployment
 
 services:
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: orion-postgres
     environment:
       POSTGRES_DB: ${DB_NAME:-orion}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER:-orion_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-orion_password}
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME:-orion}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-orion_user} -d ${DB_NAME:-orion}"]
       interval: 30s
       timeout: 10s
       retries: 3
     networks:
       - orion-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
 
   backend:
     build: 
@@ -30,10 +42,12 @@ services:
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_USER=${DB_USER:-orion_user}
+      - DB_PASSWORD=${DB_PASSWORD:-orion_password}
       - DB_NAME=${DB_NAME:-orion}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - DEBUG=${DEBUG:-true}
     ports:
       - "8000:8000"
     depends_on:
@@ -44,6 +58,17 @@ services:
     networks:
       - orion-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
 volumes:
   postgres_data:
