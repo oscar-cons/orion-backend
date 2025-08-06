@@ -7,6 +7,7 @@ import { FilterBuilder } from "@/components/ui/filter-builder"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
+import { dataService } from "@/lib/dataService"
 
 const fieldsByEntity: Record<string, { value: string; label: string; type?: string }[]> = {
   "forum-posts": [
@@ -79,12 +80,7 @@ export default function AdvancedSearchPage() {
         return
       }
       try {
-        const res = await fetch(`http://127.0.0.1:8000/search?q=${encodeURIComponent(query)}`)
-        if (!res.ok) {
-          setSuggestion("")
-          return
-        }
-        const data = await res.json()
+        const data = await dataService.search(query) as any
         // Buscar la mejor sugerencia que empiece con el query
         const allFields: string[] = []
         Object.values(data).forEach((items: any) => {
@@ -140,10 +136,11 @@ export default function AdvancedSearchPage() {
     const searchValue = customQuery !== undefined ? customQuery : query
     const activeFilters = customFilters || filters;
 
-    let url = `http://127.0.0.1:8000/search?q=${encodeURIComponent(searchValue)}`;
-
+    // Prepare filters for dataService
+    const searchFilters: any = {};
+    
     if (selectedScopes.length > 0) {
-      url += `&entity=${selectedScopes.join(',')}`;
+      searchFilters.entity = selectedScopes.join(',');
     }
 
     if (activeFilters.length > 0) {
@@ -153,20 +150,18 @@ export default function AdvancedSearchPage() {
           let value = f.value;
           const fieldType = allFilterableFields.find(field => field.value === f.field)?.type;
           if (fieldType === 'date' && value instanceof Date) {
-            value = format(value, "yyyy-MM-dd"); // Corrección aquí
+            value = format(value, "yyyy-MM-dd");
           }
           return `${encodeURIComponent(f.field)}:${encodeURIComponent(f.operator)}:${encodeURIComponent(value)}`
         })
         .join("&filter=");
       if (filterParams) {
-        url += `&filter=${filterParams}`;
+        searchFilters.filter = filterParams;
       }
     }
 
     try {
-      const res = await fetch(url)
-      if (!res.ok) throw new Error("Error en la búsqueda")
-      const data = await res.json()
+      const data = await dataService.search(searchValue, searchFilters) as any
       setResults(data)
     } catch (err: any) {
       setError(err.message || "Error desconocido")

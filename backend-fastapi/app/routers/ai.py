@@ -12,15 +12,19 @@ from .. import models, schemas
 load_dotenv()
 
 # --- Configuración de la API de Gemini ---
-# Idealmente, la clave de API debería cargarse de forma segura desde variables de entorno
-# Por ejemplo, usando: from dotenv import load_dotenv; load_dotenv()
-# Y asegurándote de tener un archivo .env con GOOGLE_API_KEY="tu_clave_aqui"
-# genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+# Load API key from environment variable
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+if GOOGLE_API_KEY:
+    genai.configure(api_key=GOOGLE_API_KEY)
 
 router = APIRouter()
 
 @router.post("/ai/summarize-post/{post_id}", response_model=schemas.AISummaryOut)
 async def summarize_post(post_id: UUID, db: AsyncSession = Depends(get_db), force: bool = Query(False)):
+    # Check if API key is configured
+    if not GOOGLE_API_KEY:
+        raise HTTPException(status_code=500, detail="Google API key not configured")
+    
     # 1. Buscar el post en la base de datos
     result = await db.execute(select(models.ForumPost).where(models.ForumPost.id == post_id))
     post = result.scalar_one_or_none()
@@ -55,12 +59,6 @@ async def summarize_post(post_id: UUID, db: AsyncSession = Depends(get_db), forc
 
     # --- Bloque de llamada a la API de Gemini ---
     try:
-        import google.generativeai as genai
-        import os
-
-        # Configura la clave de API de Gemini desde variables de entorno
-        genai.configure(api_key="AIzaSyBMv3USjK28FkzhjXfLuZtvO0sWaTJVFSo")
-
         model = genai.GenerativeModel('gemini-2.5-flash')
         response = await model.generate_content_async(prompt)
 
@@ -88,6 +86,10 @@ async def summarize_post(post_id: UUID, db: AsyncSession = Depends(get_db), forc
 
 @router.post("/ai/summarize-entry/{entry_id}", response_model=schemas.AISummaryOut)
 async def summarize_entry(entry_id: UUID, db: AsyncSession = Depends(get_db), force: bool = Query(False)):
+    # Check if API key is configured
+    if not GOOGLE_API_KEY:
+        raise HTTPException(status_code=500, detail="Google API key not configured")
+    
     # 1. Buscar la entrada en la base de datos
     result = await db.execute(select(models.RansomwareEntry).where(models.RansomwareEntry.id == entry_id))
     entry = result.scalar_one_or_none()
@@ -126,12 +128,6 @@ async def summarize_entry(entry_id: UUID, db: AsyncSession = Depends(get_db), fo
 
     # --- Bloque de llamada a la API de Gemini ---
     try:
-        import google.generativeai as genai
-        import os
-
-        # Configura la clave de API de Gemini desde variables de entorno
-        genai.configure(api_key="AIzaSyBMv3USjK28FkzhjXfLuZtvO0sWaTJVFSo")
-
         model = genai.GenerativeModel('gemini-2.5-flash')
         response = await model.generate_content_async(prompt)
 

@@ -1,14 +1,15 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../../components/components/ui/table"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { DetailPanel } from "../../../components/components/ui/detail-panel"
+import { DetailPanel } from "@/components/ui/detail-panel"
 import { ReloadButton } from "@/components/ui/reload-button"
 import { PaginationControls } from "@/components/ui/pagination-controls"
-
+import { ExternalLink } from "lucide-react"
+import { dataService } from "@/lib/dataService"
 interface ResultsTableProps {
   results: {
     [entity: string]: any[]
@@ -173,13 +174,14 @@ export default function ResultsTable({ results, searchTerm = "", filters, fields
 
   useEffect(() => {
     // Fetch forums al montar
-    fetch("http://127.0.0.1:8000/forums")
-      .then((res) => res.json())
-      .then((data) => {
+    dataService.getForums()
+      .then((data: any) => {
         const map: Record<string, string> = {}
-        data.forEach((forum: any) => {
-          map[forum.id] = forum.name
-        })
+        if (Array.isArray(data)) {
+          data.forEach((forum: any) => {
+            map[forum.id] = forum.name
+          })
+        }
         setForumsMap(map)
       })
       .catch(() => {})
@@ -355,6 +357,17 @@ export default function ResultsTable({ results, searchTerm = "", filters, fields
                                       }}
                                     >
                                       View
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        window.open(`/sources/forum/${row.item.forum_id}/post/${row.item.id}`, "_blank");
+                                      }}
+                                      aria-label="Open in New Tab"
+                                    >
+                                      <ExternalLink className="w-4 h-4" />
                                     </Button>
                                   </TableCell>
                                 </TableRow>

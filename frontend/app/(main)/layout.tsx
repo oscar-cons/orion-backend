@@ -89,11 +89,6 @@ function AppSidebar() {
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>
-                    <SidebarMenuSubButton asChild isActive={pathname === "/sources/add"}>
-                      <Link href="/sources/add">Añadir Source</Link>
-                    </SidebarMenuSubButton>
-                  </SidebarMenuSubItem>
-                  <SidebarMenuSubItem>
                     <SidebarMenuSubButton asChild href="/sources/ransomware">
                       <Link href="/sources/ransomware">Ransomware</Link>
                     </SidebarMenuSubButton>

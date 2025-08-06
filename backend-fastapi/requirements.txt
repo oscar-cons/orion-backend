@@ -7,3 +7,5 @@ python-multipart
 pydantic
 alembic
 requests
+google-generativeai
+python-dotenv

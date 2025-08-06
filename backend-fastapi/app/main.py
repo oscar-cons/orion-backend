@@ -18,6 +18,10 @@ async def startup():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "orion-backend-api"}
+
 app.include_router(forum.router)
 app.include_router(source.router)
 app.include_router(ransomware.router)

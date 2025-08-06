@@ -1,0 +1,5 @@
+---
+description: DO NOT CREATE TEST FILES WITHOUT THE USER'S EXPLICIT REQUEST
+globs:
+alwaysApply: true
+---

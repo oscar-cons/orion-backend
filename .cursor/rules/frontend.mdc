@@ -1,0 +1,5 @@
+---
+description: When asked for a component, try to update existing ones or create a new one if necessary, improve reusability. This applies to frontend.
+globs:
+alwaysApply: false
+---

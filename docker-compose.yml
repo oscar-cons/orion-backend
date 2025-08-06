@@ -1,0 +1,53 @@
+# Usage: docker-compose up --build
+# This starts a clean FastAPI + PostgreSQL environment inside Docker.
+# To reset database: docker-compose down -v
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: orion-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-orion}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME:-orion}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - orion-network
+
+  backend:
+    build: 
+      context: ./backend-fastapi
+      dockerfile: Dockerfile
+    container_name: orion-backend
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-orion}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend-fastapi:/app
+    networks:
+      - orion-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  orion-network:
+    driver: bridge

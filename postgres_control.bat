@@ -7,7 +7,7 @@ REM   postgres_control.bat stop   → Stops the PostgreSQL instance
 REM ------------------------------------------------------------------------------
 REM CONFIGURATION SECTION - ADJUST THESE VALUES TO YOUR INSTALLATION
 
-set "PGDATA=C:\Users\OscarGranados\Desktop\studio\postgresql_data"
+set "PGDATA=C:\Users\OscarGranados\Desktop\studio-backend\postgresql_data"
 set "PGBIN=C:\Program Files\PostgreSQL\17\bin"
 set "PORT=5433"
 set "LOGFILE=%PGDATA%\server.log"

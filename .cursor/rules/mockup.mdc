@@ -1,0 +1,5 @@
+---
+description: when asked to generate mockup data to show on the frontend instead of using the API and real data, generate the mockup requested with the same format saved on the backend, more specefically in models.py, schemas.py, routers folder... If asked for a specific mockup structure and content, ignore this rule and follow the request.
+globs:
+alwaysApply: false
+---

@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: orion-postgres-prod
+    environment:
+      POSTGRES_DB: ${DB_NAME:-orion}
+      POSTGRES_USER: ${DB_USER:-OrionDev}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    # Remove external port exposure for security
+    # ports:
+    #   - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-OrionDev} -d ${DB_NAME:-orion}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - orion-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  backend:
+    build: 
+      context: ./backend-fastapi
+      dockerfile: Dockerfile
+    container_name: orion-backend-prod
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-OrionDev}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-Orion}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - ENVIRONMENT=production
+      - DEBUG=false
+    # Remove external port exposure - nginx will handle external access
+    # ports:
+    #   - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - orion-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    image: nginx:alpine
+    container_name: orion-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+    networks:
+      - orion-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  orion-network:
+    driver: bridge 

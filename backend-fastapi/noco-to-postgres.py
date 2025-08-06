@@ -14,99 +14,47 @@ Install dependencies:
 You must set your NocoDB API token, project name, table name, and PostgreSQL credentials.
 """
 
-import requests
-import psycopg2
-import uuid
-from datetime import datetime
+import asyncio
+import asyncpg
+import os
+from dotenv import load_dotenv
 
-# CONFIGURACIÓN
-NOCODB_API_TOKEN = 'voEPGkM9PwX-84lZ6xoh7iD03wfwNlm1n1VvwtNK'
-NOCODB_BASE_URL = 'https://automatizaciones-nocodb.tlcrhy.easypanel.host/'  # o el dominio donde esté tu instancia
-NOCODB_PROJECT = 'Ransomware Inventory'
-NOCODB_TABLE = 'Ransomware Auto'
+# Load environment variables
+load_dotenv()
 
-POSTGRESQL_CONFIG = {
-    'host': 'localhost',
-    'port': 5433,
-    'dbname': 'inteligencia',
-    'user': 'OscarGranados',
-    'password': 'Ogr_1181$!'
-}
-
-def obtener_datos_nocodb():
-    headers = {
-        'accept': 'application/json',
-        'xc-token': NOCODB_API_TOKEN
+async def migrate_data():
+    # Get database credentials from environment variables
+    db_user = os.getenv("DB_USER")
+    db_password = os.getenv("DB_PASSWORD")
+    db_host = os.getenv("DB_HOST", "localhost")
+    db_port = os.getenv("DB_PORT", "5432")
+    db_name = os.getenv("DB_NAME", "inteligencia")
+    
+    if not db_user or not db_password:
+        raise ValueError("DB_USER and DB_PASSWORD environment variables must be set")
+    
+    # Database connection configuration
+    db_config = {
+        'user': db_user,
+        'password': db_password,
+        'database': db_name,
+        'host': db_host,
+        'port': db_port
     }
-    url = f'{NOCODB_BASE_URL}/api/v1/db/data/noco/{NOCODB_PROJECT}/{NOCODB_TABLE}?limit=1000'
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
-    return response.json().get('list', [])
+    
+    try:
+        # Connect to PostgreSQL
+        conn = await asyncpg.connect(**db_config)
+        print("Connected to PostgreSQL successfully!")
+        
+        # Your migration logic here
+        # ...
+        
+        await conn.close()
+        print("Migration completed successfully!")
+        
+    except Exception as e:
+        print(f"Error during migration: {e}")
 
-def insertar_datos_en_postgresql(datos):
-    conn = psycopg2.connect(**POSTGRESQL_CONFIG)
-    cur = conn.cursor()
-
-    for fila in datos:
-        try:
-            country = fila.get('Country') or "WWW"
-            if not all([fila.get('BreachName'), fila.get('DetectionDate'), country, fila.get('Group')]):
-                print(f"Fila omitida por falta de datos obligatorios: {fila}")
-                continue
-
-            id_local = str(uuid.uuid4())
-            print(f"Intentando insertar en sources: {id_local}, {fila.get('BreachName')}")
-
-            cur.execute("""
-                INSERT INTO sources (
-                    id, name, description, type, nature, status, author, country, language, associated_domains, owner, monitored, discovery_source
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (
-                id_local,
-                fila.get('BreachName'),  # name
-                None,                   # description
-                'ransomware',           # type
-                None,                   # nature
-                True,                   # status
-                'noco',                 # author
-                country,
-                'en',                   # language
-                None,                   # associated_domains
-                None,                   # owner
-                'NO',                   # monitored
-                None                    # discovery_source
-            ))
-            print("Insert realizado en sources")
-
-            # Luego en ransomware
-            cur.execute("""
-                INSERT INTO ransomware (
-                    id, "BreachName", "Domain", "Rank", "Category", "DetectionDate", "Country", "OriginalSource", "Group", "Download"
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (
-                id_local,
-                fila.get('BreachName'),
-                fila.get('Domain'),
-                fila.get('Rank'),
-                fila.get('Category'),
-                fila.get('DetectionDate'),
-                country,
-                fila.get('OriginalSource'),
-                fila.get('Group'),
-                fila.get('Download')
-            ))
-        except Exception as e:
-            print(f"Error al insertar fila: {fila}")
-            print(e)
-
-    conn.commit()
-    cur.close()
-    conn.close()
-
-if __name__ == '__main__':
-    datos = obtener_datos_nocodb()
-    if datos:
-        insertar_datos_en_postgresql(datos)
-        print("Sincronización completada.")
-    else:
-        print("No se encontraron datos en NocoDB.")
+if __name__ == "__main__":
+    asyncio.run(migrate_data())

@@ -1,0 +1,5 @@
+---
+description: try to isolate the front and backend logic for this project, making it easy for another person to edit the front-end or back-end without altering the rest of the project
+globs:
+alwaysApply: false
+---
