@@ -1,10 +1,20 @@
 FROM postgres:15
 
+# Install git to clone the repository
+RUN apt-get update && apt-get install -y \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Clone the repository to get init.sql
+RUN git clone https://github.com/oscar-cons/orion-backend.git /tmp/orion-backend && \
+    cd /tmp/orion-backend && \
+    git checkout v0.5-beta-docker
+
 # Create directory for initialization scripts
 RUN mkdir -p /docker-entrypoint-initdb.d
 
-# Copy the initialization SQL script
-COPY init.sql /docker-entrypoint-initdb.d/01-init-db.sql
+# Copy the initialization SQL script from the cloned repository
+COPY --from=0 /tmp/orion-backend/backend-fastapi/init.sql /docker-entrypoint-initdb.d/01-init-db.sql
 
 # Expose PostgreSQL port
 EXPOSE 5432
