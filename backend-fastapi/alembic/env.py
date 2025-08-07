@@ -17,11 +17,16 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
+# Import your models here for 'autogenerate' support
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from app.models import Base
+from app.database import Base as DatabaseBase
+
+# Set target metadata for autogenerate
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -35,7 +40,7 @@ def get_url():
     password = os.getenv("DB_PASSWORD")
     host = os.getenv("DB_HOST", "localhost")
     port = os.getenv("DB_PORT", "5432")
-    database = os.getenv("DB_NAME", "inteligencia")
+    database = os.getenv("DB_NAME", "orion")
     
     if not user or not password:
         raise ValueError("DB_USER and DB_PASSWORD environment variables must be set")

@@ -3,11 +3,8 @@ FROM postgres:15
 # Create directory for initialization scripts
 RUN mkdir -p /docker-entrypoint-initdb.d
 
-# Create initialization SQL script
-COPY <<EOF /docker-entrypoint-initdb.d/01-init-db.sql
--- Create extension for UUID support
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-EOF
+# Copy the initialization SQL script
+COPY init.sql /docker-entrypoint-initdb.d/01-init-db.sql
 
 # Expose PostgreSQL port
 EXPOSE 5432

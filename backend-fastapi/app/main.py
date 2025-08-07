@@ -37,7 +37,7 @@ async def initialize_database():
         
         # Run Alembic upgrade head
         result = subprocess.run(
-            ["alembic", "upgrade", "head"],
+            ["python", "-m", "alembic", "upgrade", "head"],
             capture_output=True,
             text=True,
             env=env,
@@ -62,40 +62,6 @@ async def initialize_database():
             detail=f"Error initializing database: {str(e)}"
         )
 
-@app.get("/database-status/")
-async def get_database_status():
-    """
-    Check the current status of the database migrations.
-    """
-    try:
-        # Get current revision
-        current_result = subprocess.run(
-            ["alembic", "current"],
-            capture_output=True,
-            text=True,
-            cwd="/app/backend-fastapi"
-        )
-        
-        # Get available revisions
-        history_result = subprocess.run(
-            ["alembic", "history", "--verbose"],
-            capture_output=True,
-            text=True,
-            cwd="/app/backend-fastapi"
-        )
-        
-        return {
-            "current_revision": current_result.stdout.strip() if current_result.returncode == 0 else "Error getting current revision",
-            "migration_history": history_result.stdout.strip() if history_result.returncode == 0 else "Error getting migration history",
-            "current_revision_error": current_result.stderr if current_result.returncode != 0 else None,
-            "history_error": history_result.stderr if history_result.returncode != 0 else None
-        }
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error checking database status: {str(e)}"
-        )
 
 app.include_router(forum.router)
 app.include_router(source.router)
